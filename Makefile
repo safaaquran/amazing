@@ -25,3 +25,7 @@ lint:
 lint-strict:
 	flake8 .
 	mypy . --strict
+
+fclean:
+	$(PYTHON) $(MAIN) $(CONFIG)
+	rm -rf __pycache__
