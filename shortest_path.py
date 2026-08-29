@@ -1,41 +1,93 @@
 from maze import MazeGenerator
-from Collection import deque
+from collections import deque
 
-def Finding_shortest_path(grid: list[list[MazeGenerator.Cell]], entry: tuple[int, int], exit_: tuple[int, int]):
-    q: deque = deque()
-    visited: list[tuple[int, int]] = []
-    visited.append(entry)
 
+def Finding_shortest_path(
+    grid: list[list[MazeGenerator.Cell]],
+    entry: tuple[int, int],
+    exit_point: tuple[int, int]
+) -> list[tuple[int, int]]:
+
+    height = len(grid)
+    width = len(grid[0])
+
+    q: deque[tuple[int, int]] = deque()
+    visited: set[tuple[int, int]] = set()
+    parent: dict[tuple[int, int], tuple[int, int]] = {}
+
+    visited.add(entry)
     q.append(entry)
-    neighbor: tuple[int, int]
 
     while q:
         row, column = q.popleft()
         current = grid[row][column]
 
-        if (row, column) == exit_:
+        if (row, column) == exit_point:
             break
 
         if not current.Top:
             neighbor = (row - 1, column)
-            if neighbor not in visited and not grid[neighbor[0]][neighbor[1]].Lock:
-                visited.append(neighbor)
+
+            if (
+                0 <= neighbor[0] < height
+                and 0 <= neighbor[1] < width
+                and neighbor not in visited
+                and not grid[neighbor[0]][neighbor[1]].Lock
+            ):
+                visited.add(neighbor)
+                parent[neighbor] = (row, column)
                 q.append(neighbor)
 
         if not current.Left:
             neighbor = (row, column - 1)
-            if neighbor not in visited and not grid[neighbor[0]][neighbor[1]].Lock:
-                visited.append(neighbor)
+
+            if (
+                0 <= neighbor[0] < height
+                and 0 <= neighbor[1] < width
+                and neighbor not in visited
+                and not grid[neighbor[0]][neighbor[1]].Lock
+            ):
+                visited.add(neighbor)
+                parent[neighbor] = (row, column)
                 q.append(neighbor)
 
         if not current.Bottom:
             neighbor = (row + 1, column)
-            if neighbor not in visited and not grid[neighbor[0]][neighbor[1]].Lock:
-                visited.append(neighbor)
+
+            if (
+                0 <= neighbor[0] < height
+                and 0 <= neighbor[1] < width
+                and neighbor not in visited
+                and not grid[neighbor[0]][neighbor[1]].Lock
+            ):
+                visited.add(neighbor)
+                parent[neighbor] = (row, column)
                 q.append(neighbor)
 
         if not current.Right:
             neighbor = (row, column + 1)
-            if neighbor not in visited and not grid[neighbor[0]][neighbor[1]].Lock:
-                visited.append(neighbor)
+
+            if (
+                0 <= neighbor[0] < height
+                and 0 <= neighbor[1] < width
+                and neighbor not in visited
+                and not grid[neighbor[0]][neighbor[1]].Lock
+            ):
+                visited.add(neighbor)
+                parent[neighbor] = (row, column)
                 q.append(neighbor)
+
+    if exit_point not in visited:
+        return []
+
+    goal = exit_point
+    s_path: list[tuple[int, int]] = []
+
+    while goal != entry:
+        s_path.append(goal)
+        goal = parent[goal]
+
+    s_path.append(entry)
+    s_path.reverse()
+
+    return s_path
