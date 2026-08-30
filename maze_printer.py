@@ -1,72 +1,122 @@
 from maze import MazeGenerator
 
-def Maze_Printer(grid: list[list["MazeGenerator.Cell"]], path: list[tuple[int, int]] = None) -> None:
-    if path is None:
-        path = []
-        
-    path_set = set(path)
-    rows = len(grid)
-    cols = len(grid[0])
 
-    def h_wall(i, j):
-        if i == 0 or i == rows:
-            return True
-        return grid[i - 1][j].Bottom
+def Maze_Printer(
+        grid: list[list["MazeGenerator.Cell"]],
+        rows: int, columns: int, entry: int,
+        ext: int, colors: list[str]
+        ) -> None:
 
-    def v_wall(i, j):
-        if j == 0 or j == cols:
-            return True
-        return grid[i][j - 1].Right
+    walls_color = colors[0]
+    forty_color = colors[1]
+    entry_color = "\033[38;2;210;170;120m"
+    exit_color = "\033[38;2;20;50;100m"
 
-    CORNERS = {
-        (False, False, False, False): " ", (True,  False, False, False): "╵",
-        (False, True,  False, False): "╷", (False, False, True,  False): "╴",
-        (False, False, False, True):  "╶", (True,  True,  False, False): "│",
-        (False, False, True,  True):  "─", (True,  False, True,  False): "┘",
-        (True,  False, False, True):  "└", (False, True,  True,  False): "┐",
-        (False, True,  False, True):  "┌", (True,  True,  True,  False): "┤",
-        (True,  True,  False, True):  "├", (True,  False, True,  True):  "┴",
-        (False, True,  True,  True):  "┬", (True,  True,  True,  True):  "┼",
-    }
+    for i in range(columns):
+        print(walls_color + "████", end="")
+    print(walls_color + "██")
 
-    def corner_char(i, j):
-        up = v_wall(i - 1, j) if i > 0 else False
-        down = v_wall(i, j) if i < rows else False
-        left = h_wall(i, j - 1) if j > 0 else False
-        right = h_wall(i, j) if j < cols else False
-        return CORNERS[(up, down, left, right)]
+    rows_num = rows * 2
+    for row in range(1, rows_num):
+        i = (row - 1) // 2
+        print(walls_color + "█", end="")
+        for column in range(columns):
+            if row % 2 != 0:
+                if grid[i][column].Lock:
+                    print(forty_color + "████", end="")
+                elif (i, column) == entry:
+                    if grid[i][column].Right:
+                        print(entry_color + " ██" + walls_color + "█", end="")
+                    else:
+                        print(entry_color + " ██ ", end="")
 
-    lines = []
-    
-    # ANSI Colors
-    YELLOW_BG, YELLOW_FG = "\033[43m", "\033[33m"
-    GREEN_BG, GREEN_FG = "\033[42m", "\033[32m"
-    RESET = "\033[0m"
+                elif (i, column) == ext:
+                    if grid[i][column].Right:
+                        print(exit_color + " ██" + walls_color + "█", end="")
+                    else:
+                        print(exit_color + " ██ ", end="")
 
-    for i in range(rows + 1):
-        line = ""
-        for j in range(cols):
-            line += corner_char(i, j)
-            line += "───" if h_wall(i, j) else "   "
-        line += corner_char(i, cols)
-        lines.append(line)
-
-        if i < rows:
-            cell_line = ""
-            for j in range(cols):
-                cell_line += "│" if v_wall(i, j) else " "
-                
-
-                if grid[i][j].Lock:
-                    cell_line += f"{YELLOW_BG}{YELLOW_FG}███{RESET}"
-            
-                elif (i, j) in path_set:
-                    cell_line += f"{GREEN_BG}{GREEN_FG}███{RESET}"
-    
+                elif grid[i][column].Right:
+                    print(walls_color + "   █", end="")
                 else:
-                    cell_line += "   "
+                    print("    ", end="")
+            else:
+                if grid[i][column].Lock:
+                    color = forty_color
+                else:
+                    color = walls_color
+                if grid[i][column].Bottom:
+                    print(color + "████", end="")
+                else:
+                    print(walls_color + "   █", end="")
+        print(walls_color + "█")
 
-            cell_line += "│" if v_wall(i, cols) else " "
-            lines.append(cell_line)
+    for i in range(columns):
+        print(walls_color + "████", end="")
+    print(walls_color + "██")
 
-    print("\n".join(lines))
+
+def Maze_Printer_withPath(grid: list[list[MazeGenerator.Cell]],
+                          rows: int, columns: int,
+                          entry: tuple[int, int],
+                          ext: tuple[int, int],
+                          colors: list[str],
+                          path: list[tuple[int, int]]
+                          ) -> None:
+
+    wall_color = colors[0]
+    forty_color = colors[1]
+    path_color = "\033[38;2;150;50;70m"  # maroon
+    entry_color = "\033[38;2;210;170;120m"  # brown
+    exit_color = "\033[38;2;20;50;100m"  # blue
+
+    for i in range(columns):
+        print(wall_color + "████", end="")
+    print(wall_color + "██")
+
+    rows_num = rows * 2
+    for row in range(1, rows_num):
+        i = (row - 1) // 2
+        print(wall_color + "█", end="")
+        for column in range(columns):
+            if row % 2 != 0:
+                if grid[i][column].Lock:
+                    print(forty_color + "████", end="")
+                elif (i, column) == entry:
+                    if grid[i][column].Right:
+                        print(entry_color + " ██" + wall_color + "█", end="")
+                    else:
+                        print(entry_color + " ██ ", end="")
+
+                elif (i, column) == ext:
+                    if grid[i][column].Right:
+                        print(exit_color + " ██" + wall_color + "█", end="")
+                    else:
+                        print(exit_color + " ██ ", end="")
+
+                elif (i, column) in path:
+                    if grid[i][column].Right:
+                        print(path_color + " ██" + wall_color + "█", end="")
+                    else:
+                        print(path_color + " ██ ", end="")
+
+                elif grid[i][column].Right:
+                    print(wall_color + "   █", end="")
+                else:
+                    print("    ", end="")
+
+            else:
+                if grid[i][column].Lock:
+                    color = forty_color
+                else:
+                    color = wall_color
+
+                if grid[i][column].Bottom:
+                    print(color + "████", end="")
+                else:
+                    print(wall_color + "   █", end="")
+        print(wall_color + "█")
+
+    for column in range(columns):
+        print(wall_color + "████", end="")
+    print(wall_color + "██")
